@@ -2,7 +2,7 @@
 
 Rodrigo Núñez Magallanes
 y
-Gabriel Rodríguez de la Rosa
+Gabriel Rodríguez de los Reyes
 
 ### Descripción del proyecto
 
