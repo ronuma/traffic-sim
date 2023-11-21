@@ -28,3 +28,5 @@ Server/tc2008B_flask.py
 - If everything is running, Unity should render a simple scene with cubes that are moving:
 
 ![RandomAgentSimulation](/docs/Images/Random_agent_simulation.png)
+
+- [Traffic Base](./trafficBase/): Base simulation for the traffic simulation. Contains city maps that are used to create a model for the agents to interact with.
