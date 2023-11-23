@@ -29,7 +29,7 @@ class CityModel(Model):
                 self.width = len(lines[0]) - 1
                 self.height = len(lines)
                 
-                self.spawn_points = [(0,0), (self.width - 1, 0), (0,self.height - 1), (self.width - 1, self.height - 1)]
+                self.spawn_points = [(0,0)]
 
                 self.grid = MultiGrid(self.width, self.height, torus=False)
                 self.schedule = RandomActivation(self)
@@ -184,8 +184,7 @@ class CityModel(Model):
             return graph          
         
     def add_cars(self):
-        for car in range(len(self.spawn_points)):    
-                    print(car)                
+        for car in range(len(self.spawn_points)):                           
                     dest = random.choice(self.destinations) #choose a random destination
                     agent = Car(f"c_{self.car_count}", self, dest, self.map, self.spawn_points[car])
                     self.grid.place_agent(agent, self.spawn_points[car])
@@ -199,8 +198,8 @@ class CityModel(Model):
         plt.show()
 
     def step(self):
-        if self.step_count%20 == 0 and self.step_count != 0:
-            self.add_cars()
+        # if self.step_count%20 == 0 and self.step_count != 0:
+        #     self.add_cars()
             
         self.step_count += 1
         self.schedule.step()
