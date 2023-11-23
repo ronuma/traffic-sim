@@ -16,6 +16,10 @@ def agent_portrayal(agent):
     if (isinstance(agent, Road)):
         portrayal["Color"] = "grey"
         portrayal["Layer"] = 0
+        
+    if (isinstance(agent, Car)):
+        portrayal["Color"] = "black"
+        portrayal["Layer"] = 1
     
     if (isinstance(agent, Destination)):
         portrayal["Color"] = "lightgreen"
@@ -38,12 +42,12 @@ def agent_portrayal(agent):
 width = 0
 height = 0
 
-with open('city_files/2022_base.txt') as baseFile:
+with open('./city_files/2022_base.txt') as baseFile:
     lines = baseFile.readlines()
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N":5}
+model_params = {"N":1}
 
 print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
