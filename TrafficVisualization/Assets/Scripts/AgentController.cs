@@ -1,6 +1,6 @@
 ﻿// TC2008B. Sistemas Multiagentes y Gráficas Computacionales
 // C# client to interact with Python. Based on the code provided by Sergio Ruiz.
-// Octavio Navarro. October 2023
+// Octavio Navarro for the base, Rodrigo Nunez for the cars. October 2023
 
 using System;
 using System.Collections;
@@ -60,60 +60,50 @@ public class AgentController : MonoBehaviour
         sendConfigEndpoint (string): The endpoint to send the configuration.
         updateEndpoint (string): The endpoint to update the simulation.
         agentsData (AgentsData): The data of the agents.
-        obstacleData (AgentsData): The data of the obstacles.
         agents (Dictionary<string, GameObject>): A dictionary of the agents.
         prevPositions (Dictionary<string, Vector3>): A dictionary of the previous positions of the agents.
         currPositions (Dictionary<string, Vector3>): A dictionary of the current positions of the agents.
         updated (bool): A boolean to know if the simulation has been updated.
         started (bool): A boolean to know if the simulation has started.
         agentPrefab (GameObject): The prefab of the agents.
-        obstaclePrefab (GameObject): The prefab of the obstacles.
-        floor (GameObject): The floor of the simulation.
         NAgents (int): The number of agents.
-        width (int): The width of the simulation.
-        height (int): The height of the simulation.
         timeToUpdate (float): The time to update the simulation.
         timer (float): The timer to update the simulation.
         dt (float): The delta time.
     */
     string serverUrl = "http://localhost:8585";
     string getAgentsEndpoint = "/getAgents";
-    string getObstaclesEndpoint = "/getObstacles";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
-    AgentsData agentsData, obstacleData;
+    AgentsData agentsData;
     Dictionary<string, GameObject> agents;
     Dictionary<string, Vector3> prevPositions, currPositions;
 
     bool updated = false, started = false;
 
-    public GameObject agentPrefab, obstaclePrefab, floor;
-    public int NAgents, width, height;
+    public GameObject agentPrefab;
+    public int NAgents;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
 
     void Start()
     {
         agentsData = new AgentsData();
-        obstacleData = new AgentsData();
 
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
 
         agents = new Dictionary<string, GameObject>();
 
-        floor.transform.localScale = new Vector3((float)width/10, 1, (float)height/10);
-        floor.transform.localPosition = new Vector3((float)width/2-0.5f, 0, (float)height/2-0.5f);
-        
         timer = timeToUpdate;
 
         // Launches a couroutine to send the configuration to the server.
         StartCoroutine(SendConfiguration());
     }
 
-    private void Update() 
+    private void Update()
     {
-        if(timer < 0)
+        if (timer < 0)
         {
             timer = timeToUpdate;
             updated = false;
@@ -127,31 +117,31 @@ public class AgentController : MonoBehaviour
 
             // Iterates over the agents to update their positions.
             // The positions are interpolated between the previous and current positions.
-            foreach(var agent in currPositions)
+            foreach (var agent in currPositions)
             {
                 Vector3 currentPosition = agent.Value;
                 Vector3 previousPosition = prevPositions[agent.Key];
 
-                Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
-                Vector3 direction = currentPosition - interpolated;
+                // Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
+                // Vector3 direction = currentPosition - interpolated;
 
-                agents[agent.Key].transform.localPosition = interpolated;
-                if(direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                // agents[agent.Key].transform.localPosition = interpolated;
+                // if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
             }
 
             // float t = (timer / timeToUpdate);
             // dt = t * t * ( 3f - 2f*t);
         }
     }
- 
+
     IEnumerator UpdateSimulation()
     {
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + updateEndpoint);
         yield return www.SendWebRequest();
- 
+
         if (www.result != UnityWebRequest.Result.Success)
             Debug.Log(www.error);
-        else 
+        else
         {
             StartCoroutine(GetAgentsData());
         }
@@ -166,9 +156,7 @@ public class AgentController : MonoBehaviour
         */
         WWWForm form = new WWWForm();
 
-        form.AddField("NAgents", NAgents.ToString());
-        form.AddField("width", width.ToString());
-        form.AddField("height", height.ToString());
+        form.AddField("NAgents", NAgents.ToString()); ;
 
         UnityWebRequest www = UnityWebRequest.Post(serverUrl + sendConfigEndpoint, form);
         www.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -186,65 +174,48 @@ public class AgentController : MonoBehaviour
 
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
-            StartCoroutine(GetObstacleData());
         }
     }
 
-    IEnumerator GetAgentsData() 
+    IEnumerator GetAgentsData()
     {
         // The GetAgentsData method is used to get the agents data from the server.
 
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + getAgentsEndpoint);
         yield return www.SendWebRequest();
- 
+
         if (www.result != UnityWebRequest.Result.Success)
             Debug.Log(www.error);
-        else 
+        else
         {
             // Once the data has been received, it is stored in the agentsData variable.
             // Then, it iterates over the agentsData.positions list to update the agents positions.
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            foreach(AgentData agent in agentsData.positions)
+            foreach (AgentData agent in agentsData.positions)
             {
+                // Origin to initialize the agents
+                Vector3 origin = new Vector3(0, 0, 0);
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
 
-                    if(!started)
-                    {
-                        prevPositions[agent.id] = newAgentPosition;
-                        agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
-                    }
-                    else
-                    {
-                        Vector3 currentPosition = new Vector3();
-                        if(currPositions.TryGetValue(agent.id, out currentPosition))
-                            prevPositions[agent.id] = currentPosition;
-                        currPositions[agent.id] = newAgentPosition;
-                    }
+                if (!started)
+                {
+                    prevPositions[agent.id] = newAgentPosition;
+                    agents[agent.id] = Instantiate(agentPrefab, origin, Quaternion.identity);
+                    agents[agent.id].GetComponent<CarManager>().displacement = newAgentPosition;
+                }
+                else
+                {
+                    Vector3 currentPosition = new Vector3();
+                    if (currPositions.TryGetValue(agent.id, out currentPosition))
+                        prevPositions[agent.id] = currentPosition;
+                    currPositions[agent.id] = newAgentPosition;
+                    // agents[agent.id].GetComponent<CarManager>().displacement = newAgentPosition;
+                }
             }
 
             updated = true;
-            if(!started) started = true;
-        }
-    }
-
-    IEnumerator GetObstacleData() 
-    {
-        UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
-        yield return www.SendWebRequest();
- 
-        if (www.result != UnityWebRequest.Result.Success)
-            Debug.Log(www.error);
-        else 
-        {
-            obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
-
-            Debug.Log(obstacleData.positions);
-
-            foreach(AgentData obstacle in obstacleData.positions)
-            {
-                Instantiate(obstaclePrefab, new Vector3(obstacle.x, obstacle.y, obstacle.z), Quaternion.identity);
-            }
+            if (!started) started = true;
         }
     }
 }
