@@ -339,12 +339,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agentPrefab: {fileID: 993549348249905, guid: 563375cb179ab4d4d8c0ce2bfc651964, type: 3}
-  obstaclePrefab: {fileID: 961990229689801968, guid: 0870e23a47df89e468e8af19c065fce0, type: 3}
-  floor: {fileID: 1555382164}
-  NAgents: 200
-  width: 40
-  height: 40
-  timeToUpdate: 0.5
+  NAgents: 20
+  timeToUpdate: 0.1
 --- !u!4 &1518653506
 Transform:
   m_ObjectHideFlags: 0
