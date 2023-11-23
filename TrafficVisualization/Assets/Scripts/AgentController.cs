@@ -202,7 +202,7 @@ public class AgentController : MonoBehaviour
                 {
                     prevPositions[agent.id] = newAgentPosition;
                     agents[agent.id] = Instantiate(agentPrefab, origin, Quaternion.identity);
-                    agents[agent.id].GetComponent<CarManager>().displacement = newAgentPosition;
+                    agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
                 }
                 else
                 {
@@ -210,7 +210,7 @@ public class AgentController : MonoBehaviour
                     if (currPositions.TryGetValue(agent.id, out currentPosition))
                         prevPositions[agent.id] = currentPosition;
                     currPositions[agent.id] = newAgentPosition;
-                    // agents[agent.id].GetComponent<CarManager>().displacement = newAgentPosition;
+                    agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
                 }
             }
 

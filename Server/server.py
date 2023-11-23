@@ -5,8 +5,10 @@ from flask import Flask, request, jsonify
 
 app = Flask("Traffic simulation")
 
-test_positions = [{"id": 1, "x": 0, "y":0, "z":0.3}, {"id": 2, "x": 0, "y":0, "z":0.9}
-                  , {"id": 3, "x": 0.4, "y":0, "z":0}, {"id": 4, "x": 0.5, "y":0, "z":0}]
+# test_positions = [{"id": 1, "x": 0, "y":0, "z":0.3}, {"id": 2, "x": 0, "y":0, "z":0.9}
+#                   , {"id": 3, "x": 0.4, "y":0, "z":0}, {"id": 4, "x": 0.5, "y":0, "z":0}]
+
+test_positions = [{"id": 1, "x": 0, "y":0, "z":0}]
 
 @app.route('/init', methods=['GET', 'POST'])
 def initModel():
@@ -24,7 +26,7 @@ def getAgents():
 @app.route("/update", methods=['GET'])
 def updateModel():
     if request.method == 'GET':
-        # test_positions[0]["x"] += 1
+        test_positions[0]["x"] += 0.3
         # test_positions[1]["x"] += 1
         # test_positions[2]["x"] += 1
         # test_positions[3]["x"] += 1

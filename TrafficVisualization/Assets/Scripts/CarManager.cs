@@ -9,8 +9,14 @@ using UnityEngine;
 
 public class CarManager : MonoBehaviour
 {
-    // Displacement vector
-    public Vector3 displacement;
+    bool started = false;
+    // ------- LERP --------------------------------
+    public Vector3 currentPos = new Vector3(0, 0, 0);
+    public Vector3 targetPos;
+    float t;
+    float moveTime = 3.0f;
+    float elapsedTime = 0.0f;
+    // --------------------------------------------
     // Wheel Game Objects
     [SerializeField] GameObject FrontLeftWheel;
     [SerializeField] GameObject FrontRightWheel;
@@ -65,7 +71,7 @@ public class CarManager : MonoBehaviour
         newRLWVertices = new Vector3[baseRLWVertices.Length];
         newRRWVertices = new Vector3[baseRRWVertices.Length];
         // Calculate rotation angle
-        Vector3 target = new Vector3(displacement.x, 0f, displacement.z);
+        Vector3 target = new Vector3(targetPos.x - currentPos.x, 0f, targetPos.z - currentPos.z);
         Vector3 relative = transform.InverseTransformPoint(target);
         float calculatedAngle = Mathf.Atan2(relative.x, relative.z) * Mathf.Rad2Deg;
         angle = (int)calculatedAngle;
@@ -100,10 +106,23 @@ public class CarManager : MonoBehaviour
 
     void DoTransform()
     {
+        // ------ LERP --------------------------------
+        t = elapsedTime / moveTime;
+        t = t * t * (3.0f - 2.0f * t);
+        Vector3 position = currentPos + (targetPos - currentPos) * t;
+        Matrix4x4 move = OurTransform.Translate(position.x,
+                                                      position.y,
+                                                      position.z);
+        elapsedTime += Time.deltaTime;
+        if (elapsedTime >= moveTime)
+        {
+            currentPos = targetPos;
+            elapsedTime = 0.0f;
+        }
+        // --------------------------------------------
         // Create the matrices
         // Y AXIS is ignored so that it can never go up
-        Matrix4x4 translate = OurTransform.Translate(displacement.x, 0, displacement.z);
-        Matrix4x4 move = OurTransform.Translate(displacement.x * Time.time, 0, displacement.z * Time.time);
+        Matrix4x4 translate = OurTransform.Translate(targetPos.x, 0, targetPos.z);
         Matrix4x4 rotate = OurTransform.Rotate(90 * Time.time, AXIS.X);
         // Calculate rotation angle given displacement
         Matrix4x4 rotateObj = OurTransform.Rotate(-angle, AXIS.Y);
@@ -111,7 +130,15 @@ public class CarManager : MonoBehaviour
         Matrix4x4 scaleCar = OurTransform.Scale(generalScale, generalScale, generalScale);
         // ------------- CAR ----------------
         // Combine all the matrices into a single one
-        Matrix4x4 composite = translate * move * rotateObj * scaleCar;
+        Matrix4x4 composite = rotateObj * scaleCar;
+        if (started)
+        {
+            composite = move * composite;
+        }
+        else
+        {
+            composite = translate * composite;
+        }
         // Multiply each vertex in the mesh by the composite matrix
         for (int i = 0; i < newVertices.Length; i++)
         {
@@ -171,5 +198,7 @@ public class CarManager : MonoBehaviour
         }
         RearRightWheelMesh.vertices = newRRWVertices;
         RearRightWheelMesh.RecalculateNormals();
+
+        started = true;
     }
 }
