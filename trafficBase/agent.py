@@ -53,6 +53,7 @@ class Car(Agent):
             if isinstance(agent, Destination):
                 self.model.schedule.remove(self)
                 self.model.grid.remove_agent(self)
+                self.model.car_count -= 1
                 print("Car arrived")
                 return
             if isinstance(agent, Traffic_Light):
