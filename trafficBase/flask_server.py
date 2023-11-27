@@ -3,6 +3,7 @@
 
 from flask import Flask, request, jsonify
 from model_ro import CityModel
+# from model import CityModel
 from agent import Car
 
 app = Flask("Traffic simulation")
@@ -13,10 +14,11 @@ current_step = 0
 @app.route('/init', methods=['GET', 'POST'])
 def initModel():
     global model, current_step
-    if request.method == 'GET':
+    if request.method == 'GET' or request.method == 'POST':
         current_step = 0
         model = CityModel()
         return jsonify({"message":"Model initiated."})
+
     
 @app.route('/getAgents', methods=['GET'])
 def getAgents():
@@ -33,10 +35,6 @@ def updateModel():
     if request.method == 'GET':
         model.step()
         current_step += 1
-        # test_positions[0]["x"] += 0.3
-        # test_positions[1]["x"] += 1
-        # test_positions[2]["x"] += 1
-        # test_positions[3]["x"] += 1
         return jsonify({'message':f'Model updated to step {current_step}.', 'current_step':current_step})
     
 if __name__ == '__main__':

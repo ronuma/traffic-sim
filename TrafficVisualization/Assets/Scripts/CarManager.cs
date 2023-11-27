@@ -22,7 +22,7 @@ public class CarManager : MonoBehaviour
     [SerializeField] GameObject FrontRightWheel;
     [SerializeField] GameObject RearLeftWheel;
     [SerializeField] GameObject RearRightWheel;
-    float generalScale = 0.15f;
+    float generalScale = 0.13f;
     float wheelScale = 0.35f;
     // All objects' meshes
     Mesh CarMesh;
@@ -31,7 +31,7 @@ public class CarManager : MonoBehaviour
     Mesh RearLeftWheelMesh;
     Mesh RearRightWheelMesh;
     // Angle of rotation of the vehicle, which will be calculated
-    int angle;
+    int currentAngle;
     // Vertex arrays for the meshes and transformed vertices
     Vector3[] baseVertices;
     Vector3[] newVertices;
@@ -70,11 +70,6 @@ public class CarManager : MonoBehaviour
         newFRWVertices = new Vector3[baseFRWVertices.Length];
         newRLWVertices = new Vector3[baseRLWVertices.Length];
         newRRWVertices = new Vector3[baseRRWVertices.Length];
-        // Calculate rotation angle
-        Vector3 target = new Vector3(targetPos.x - currentPos.x, 0f, targetPos.z - currentPos.z);
-        Vector3 relative = transform.InverseTransformPoint(target);
-        float calculatedAngle = Mathf.Atan2(relative.x, relative.z) * Mathf.Rad2Deg;
-        angle = (int)calculatedAngle;
         // Copy the coordinates
         for (int i = 0; i < baseVertices.Length; i++)
         {
@@ -124,8 +119,15 @@ public class CarManager : MonoBehaviour
         // Y AXIS is ignored so that it can never go up
         Matrix4x4 translate = OurTransform.Translate(targetPos.x, 0, targetPos.z);
         Matrix4x4 rotate = OurTransform.Rotate(90 * Time.time, AXIS.X);
-        // Calculate rotation angle given displacement
-        Matrix4x4 rotateObj = OurTransform.Rotate(-angle, AXIS.Y);
+        // Calculate rotation angle given target and current position
+        Vector3 target = new Vector3(targetPos.x - currentPos.x, 0f, targetPos.z - currentPos.z);
+        Vector3 relative = transform.InverseTransformPoint(target);
+        float calculatedAngle = Mathf.Atan2(relative.x, relative.z) * Mathf.Rad2Deg;
+        if (calculatedAngle > 0)
+        {
+            currentAngle = (int)calculatedAngle;
+        }
+        Matrix4x4 rotateObj = OurTransform.Rotate(-currentAngle, AXIS.Y);
         Matrix4x4 scaleWheel = OurTransform.Scale(wheelScale, wheelScale, wheelScale);
         Matrix4x4 scaleCar = OurTransform.Scale(generalScale, generalScale, generalScale);
         // ------------- CAR ----------------
@@ -149,6 +151,7 @@ public class CarManager : MonoBehaviour
         // Replace the vertices in the mesh
         CarMesh.vertices = newVertices;
         CarMesh.RecalculateNormals();
+        CarMesh.RecalculateBounds();
 
         // ------------- WHEELS ----------------
         // -- Front Left Wheel --
@@ -162,6 +165,7 @@ public class CarManager : MonoBehaviour
         }
         FrontLeftWheelMesh.vertices = newFLWVertices;
         FrontLeftWheelMesh.RecalculateNormals();
+        FrontLeftWheelMesh.RecalculateBounds();
 
         // -- Front Right Wheel --
         Matrix4x4 positionFRWheel = OurTransform.Translate(0.95f, 0.4f, 1.5f);
@@ -174,6 +178,7 @@ public class CarManager : MonoBehaviour
         }
         FrontRightWheelMesh.vertices = newFRWVertices;
         FrontRightWheelMesh.RecalculateNormals();
+        FrontRightWheelMesh.RecalculateBounds();
 
         // -- Rear Left Wheel --
         Matrix4x4 positionRLWheel = OurTransform.Translate(-0.95f, 0.4f, -1.4f);
@@ -186,6 +191,7 @@ public class CarManager : MonoBehaviour
         }
         RearLeftWheelMesh.vertices = newRLWVertices;
         RearLeftWheelMesh.RecalculateNormals();
+        RearLeftWheelMesh.RecalculateBounds();
 
         // -- Rear Right Wheel --
         Matrix4x4 positionRRWheel = OurTransform.Translate(0.95f, 0.4f, -1.4f);
@@ -198,6 +204,7 @@ public class CarManager : MonoBehaviour
         }
         RearRightWheelMesh.vertices = newRRWVertices;
         RearRightWheelMesh.RecalculateNormals();
+        RearRightWheelMesh.RecalculateBounds();
 
         started = true;
     }
