@@ -2,6 +2,7 @@ from agent import *
 from model import CityModel
 from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
+from mesa.visualization.modules import TextElement
 
 def agent_portrayal(agent):
     if agent is None: return
@@ -52,7 +53,11 @@ model_params = {"N":1}
 print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
-server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
+class CurrentCars(TextElement):
+    def render(self, model):
+        return "Cars on scene: " + str(model.car_count) + " "
+
+server = ModularServer(CityModel, [grid, CurrentCars()], "Traffic Base", model_params)
                        
 server.port = 8521 # The default
 server.launch()
