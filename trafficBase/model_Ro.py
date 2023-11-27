@@ -13,7 +13,7 @@ class CityModel(Model):
     Args:
         N: Number of agents in the simulation (assuming 1 for a single car)
     """
-    def __init__(self, N):
+    def __init__(self):
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
             self.dataDictionary = json.load(open("city_files/mapDictionary.json"))
             self.map = 0
@@ -36,7 +36,6 @@ class CityModel(Model):
                 
                 self.map = self._init_Graph(graph, lines, self.dataDictionary)
                 
-                self.num_agents = N
                 self.running = True
                 
                 self.add_cars()
@@ -195,7 +194,7 @@ class CityModel(Model):
     def plot_graph(self, graph):
         pos = {node: (node[0], -node[1]) for node in graph.nodes}  # Flip y-axis for visualization
         nx.draw(graph, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=8, font_color='black')
-        plt.show()
+        # plt.show()
 
     def step(self):
         # if self.step_count%20 == 0 and self.step_count != 0:
