@@ -70,11 +70,9 @@ class CityModel(Model):
                         self.grid.place_agent(agent, (c, self.height - r - 1))
                         graph.add_node((c, self.height - r - 1), direction=None)  # No direction for destination
                         self.destinations.append((c, self.height - r - 1)) # Add destination pos to the list
-
-            print("Graph nodes: ", graph.nodes)
+                        
             for node in graph.nodes:                
-                x, y = node
-                # x1,y1 = neighbor_node
+                x, y = node                
                 
                 if graph.nodes[node]['direction'] == "^":
                     self.adding_edges(graph, node, x, y, 0, 1, [(x - 1, y + 1), (x + 1, y + 1), (x, y + 1) ], [">", "<"])
@@ -88,7 +86,7 @@ class CityModel(Model):
                 if graph.nodes[node]['direction'] == ">":
                     self.adding_edges(graph, node, x, y, 1, 0, [(x + 1, y - 1), (x + 1, y + 1), (x + 1, y)], ["^", "v"])
                                 
-            self.plot_graph(graph)
+            # self.plot_graph(graph)
             return graph     
     
     def adding_edges(self, graph, node, x, y, xVal, yVal, neighbors, chars):
@@ -98,33 +96,39 @@ class CityModel(Model):
                         print("")
                     elif graph.nodes[neighbor]['direction'] == chars[1] and neighbor == neighbors[1]:
                         print("")
-                    else:
-                        direction = graph.nodes[node]['direction']
-                        graph.add_edge(node, neighbor, weight=direction)
+                    elif neighbor == neighbors[2]:                     
+                        graph.add_edge(node, neighbor, weight=1)
+                    else:                        
+                        graph.add_edge(node, neighbor, weight=1.2)
         
         if (x + xVal, y + yVal) in graph.nodes and 'signal_type' in graph.nodes[(x + xVal, y + yVal)] and graph.nodes[(x + xVal, y + yVal)]['signal_type'] in ["long", "short"]:
-            graph.add_edge((x + xVal, y + yVal), (x + (xVal * 2), y + (yVal * 2)), weight=direction)
+            graph.add_edge((x + xVal, y + yVal), (x + (xVal * 2), y + (yVal * 2)), weight=2)
         
-
         
     def add_cars(self):
         for car in range(len(self.spawn_points)):    
-                    print(car)                
                     dest = random.choice(self.destinations) #choose a random destination
-                    agent = Car(f"c_{self.total_cars}", self, dest, self.map, self.spawn_points[car])
-                    self.grid.place_agent(agent, self.spawn_points[car])
-                    self.schedule.add(agent)      
-                    self.car_count += 1 
-                    self.total_cars += 1
+                    patience = random.randint(5, 10)
+                    agent = Car(f"c_{self.total_cars}", self, dest, self.map, self.spawn_points[car], patience)
+                    content = self.grid.get_cell_list_contents(self.spawn_points[car])
+                    if any(isinstance(x, Car) for x in content):  # if the agent is a random agent                        
+                        return
+                    else :
+                        self.grid.place_agent(agent, self.spawn_points[car])
+                        self.schedule.add(agent)      
+                        self.car_count += 1 
+                        self.total_cars += 1
 
 
     def plot_graph(self, graph):
         pos = {node: (node[0], -node[1]) for node in graph.nodes}  # Flip y-axis for visualization
         nx.draw(graph, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=8, font_color='black')
+        labels = nx.get_edge_attributes(graph,'weight')
+        nx.draw_networkx_edge_labels(graph,pos,edge_labels=labels)
         plt.show()
 
     def step(self):
-        if self.step_count%5 == 0 and self.step_count != 0:
+        if self.step_count%1 == 0 and self.step_count != 0:
             self.add_cars()
             
         self.step_count += 1

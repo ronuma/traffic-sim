@@ -8,7 +8,7 @@ class Car(Agent):
         unique_id: Agent's ID 
         direction: Randomly chosen direction chosen from one of eight directions
     """
-    def __init__(self, unique_id, model, goal, init_model, pos):
+    def __init__(self, unique_id, model, goal, init_model, pos, patience):
         """
         Creates a new random agent.
         Args:
@@ -19,14 +19,13 @@ class Car(Agent):
         self.start = self.pos
         self.goal = goal
         self.pos = pos
-        #reverse the path
+        self.patience = 0
         self.map = init_model
         self.path = self.calculate_A_star()
                 
     def calculate_A_star(self):        
-        try:
-            print("Calculating path from", self.pos, "to", self.goal)
-            path = nx.shortest_path(self.map, self.pos, self.goal)            
+        try:            
+            path = nx.shortest_path(self.map, self.pos, self.goal, weight='weight')            
             path = path[::-1] #reverse the path
             return path
         except nx.NodeNotFound:
@@ -48,7 +47,7 @@ class Car(Agent):
                     # print("Same car")
                     continue
                 else:
-                    # print("Car in front")
+                    self.patience -= 1
                     return
             if isinstance(agent, Destination):
                 self.model.schedule.remove(self)
@@ -65,13 +64,24 @@ class Car(Agent):
                     break
         
         self.model.grid.move_agent(self, self.path[-1])
+        self.patience += 1
         self.path.pop()
+        
+    def out_of_patience(self):
+        edges = nx.edges(self.map, [self.pos])        
+        for edge in edges:
+            if edge[0][1] == self.pos[1] or edge[0][0] == self.pos[0]:            
+                self.map.edges[edge]['weight'] += 1
+        
+        self.calculate_A_star()
         
 
     def step(self):
         """ 
         Determines the new direction it will take, and then moves
         """
+        if self.patience <= 0:
+            self.out_of_patience()
         self.move()
 
 class Traffic_Light(Agent):
