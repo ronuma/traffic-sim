@@ -3,7 +3,7 @@
 
 from flask import Flask, request, jsonify
 from model import CityModel
-from agent import Car
+from agent import Car, Traffic_Light
 
 app = Flask("Traffic simulation")
 
@@ -26,7 +26,11 @@ def getAgents():
         agent_positions = [{"id": a.unique_id, "x": a.pos[0], "y":0, "z":a.pos[1]}
                           for a in model.schedule.agents
                           if isinstance(a, Car)]
-        return jsonify({'positions':agent_positions})
+        traffic_lights = [{"id": a.unique_id, "x": a.pos[0], "y":0, "z":a.pos[1], "state":a.state}
+                          for a in model.schedule.agents
+                          if isinstance(a, Traffic_Light)]
+        return jsonify({'positions':agent_positions,
+                       'traffic_lights':traffic_lights})
 
 @app.route("/update", methods=['GET'])
 def updateModel():
