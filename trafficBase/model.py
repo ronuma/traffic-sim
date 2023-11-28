@@ -26,7 +26,7 @@ class CityModel(Model):
             graph = nx.DiGraph()  # Change to directed graph     
 
             # Load the map file. The map file is a text file where each character represents an agent.
-            with open('city_files/2022_base.txt') as baseFile:
+            with open('city_files/2023_base.txt') as baseFile:
                 lines = baseFile.readlines()
                 self.width = len(lines[0]) - 1
                 self.height = len(lines)
@@ -139,7 +139,7 @@ class CityModel(Model):
         plt.show()
 
     def step(self):
-        if self.step_count%1 == 0 and self.step_count != 0:
+        if self.step_count%10 == 0 and self.step_count != 0:
             self.add_cars()
         self.step_count += 1
         self.schedule.step()
