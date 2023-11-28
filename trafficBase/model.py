@@ -21,6 +21,7 @@ class CityModel(Model):
             self.step_count = 0
             self.car_count = 0
             self.total_cars = 0
+            self.arrived_cars = 0
             self.traffic_lights = []
             graph = nx.DiGraph()  # Change to directed graph     
 
@@ -75,41 +76,52 @@ class CityModel(Model):
                 x, y = node                
                 
                 if graph.nodes[node]['direction'] == "^":
-                    self.adding_edges(graph, node, x, y, 0, 1, [(x - 1, y + 1), (x + 1, y + 1), (x, y + 1) ], [">", "<"])
+                    self.adding_edges(graph, node, x, y, 0, 1, [(x - 1, y + 1), (x + 1, y + 1), (x, y + 1), (x - 1 , y), (x + 1, y)], [">", "<"])
                 
                 if graph.nodes[node]['direction'] == "v":
-                    self.adding_edges(graph, node, x, y, 0, -1, [(x + 1, y - 1), (x - 1, y - 1),(x, y - 1)], ["<", ">"])
+                    self.adding_edges(graph, node, x, y, 0, -1, [(x + 1, y - 1), (x - 1, y - 1),(x, y - 1), (x + 1, y), (x - 1, y)], ["<", ">"])
                 
                 if graph.nodes[node]['direction'] == "<":
-                    self.adding_edges(graph, node, x, y, -1, 0, [(x - 1, y - 1), (x - 1, y + 1), (x - 1, y)], ["^", "v"])
-                   
+                    self.adding_edges(graph, node, x, y, -1, 0, [(x - 1, y - 1), (x - 1, y + 1), (x - 1, y), (x, y - 1), (x, y + 1)], ["^", "v"])
+                      
                 if graph.nodes[node]['direction'] == ">":
-                    self.adding_edges(graph, node, x, y, 1, 0, [(x + 1, y - 1), (x + 1, y + 1), (x + 1, y)], ["^", "v"])
+                    self.adding_edges(graph, node, x, y, 1, 0, [(x + 1, y - 1), (x + 1, y + 1), (x + 1, y), (x, y - 1), (x, y + 1)], ["^", "v"])
                                 
             # self.plot_graph(graph)
+            
+            
+            #Testing agents
+                # agent = Car(f"c_prueba1", self, (1,1), graph, (4,1), True)
+                # agent2 = Car(f"c_prueba2", self, (1,1), graph, (4,1), True)
+                # self.grid.place_agent(agent, (3,0))
+                # self.schedule.add(agent)   
+                # self.grid.place_agent(agent2, (4,1))
+                # self.schedule.add(agent2)    
+                
             return graph     
     
     def adding_edges(self, graph, node, x, y, xVal, yVal, neighbors, chars):
         for neighbor in neighbors:
                 if neighbor in graph.nodes:
-                    if graph.nodes[neighbor]['direction'] == chars[0] and neighbor == neighbors[0]:
+                    if graph.nodes[neighbor]['direction'] in chars and ( neighbor == neighbors[0] or neighbor == neighbors[1]):
                         print("")
-                    elif graph.nodes[neighbor]['direction'] == chars[1] and neighbor == neighbors[1]:
-                        print("")
+                    elif (neighbor == neighbors[3] and graph.nodes[neighbor]['direction'] == chars[1]) or (neighbor == neighbors[4] and graph.nodes[neighbor]['direction'] == chars[0]):
+                        graph.add_edge(node, neighbor, weight=1)
                     elif neighbor == neighbors[2]:                     
                         graph.add_edge(node, neighbor, weight=1)
-                    else:                        
+                    elif neighbor != neighbors[3] and neighbor != neighbors[4]:                     
                         graph.add_edge(node, neighbor, weight=1.2)
         
         if (x + xVal, y + yVal) in graph.nodes and 'signal_type' in graph.nodes[(x + xVal, y + yVal)] and graph.nodes[(x + xVal, y + yVal)]['signal_type'] in ["long", "short"]:
             graph.add_edge((x + xVal, y + yVal), (x + (xVal * 2), y + (yVal * 2)), weight=2)
         
         
+        
     def add_cars(self):
         for car in range(len(self.spawn_points)):    
                     dest = random.choice(self.destinations) #choose a random destination
-                    patience = random.randint(5, 10)
-                    agent = Car(f"c_{self.total_cars}", self, dest, self.map, self.spawn_points[car], patience)
+                    new_map = self.map.copy()                    
+                    agent = Car(f"c_{self.total_cars}", self, dest, new_map, self.spawn_points[car])
                     content = self.grid.get_cell_list_contents(self.spawn_points[car])
                     if any(isinstance(x, Car) for x in content):  # if the agent is a random agent                        
                         return
@@ -130,6 +142,5 @@ class CityModel(Model):
     def step(self):
         if self.step_count%1 == 0 and self.step_count != 0:
             self.add_cars()
-            
         self.step_count += 1
         self.schedule.step()
