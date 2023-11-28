@@ -140,7 +140,7 @@ class CityModel(Model):
         plt.show()
 
     def step(self):
-        if self.step_count%10 == 0 and self.step_count != 0:
+        if self.step_count%1 == 0 and self.step_count != 0:
             self.add_cars()
         self.step_count += 1
         self.schedule.step()
