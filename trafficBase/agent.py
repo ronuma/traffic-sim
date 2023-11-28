@@ -85,9 +85,11 @@ class Car(Agent):
     def out_of_patience(self):
         edges = nx.edges(self.map, [self.pos])        
         for edge in edges:
-            if edge[0][1] == edge[1][1] or edge[0][0] == edge[1][0]:            
-                self.map.edges[edge]['weight'] += 5
-                self.patience = random.randint(5, 10)
+            if edge[0][1] == edge[1][1] or edge[0][0] == edge[1][0]:                
+                content = self.model.grid.get_cell_list_contents(edge)  
+                if not any(isinstance(x, Car) for x in content):  # if the agent is a random agent                
+                    self.map.edges[edge]['weight'] += 5
+                    self.patience = random.randint(5, 10)
                 # self.plot_graph(self.map)
         
         self.calculate_A_star(self.pos, self.goal)

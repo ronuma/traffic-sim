@@ -125,6 +125,7 @@ class CityModel(Model):
                     if any(isinstance(x, Car) for x in content):  # if the agent is a random agent                        
                         return
                     else :
+                        print("Adding agent")
                         self.grid.place_agent(agent, self.spawn_points[car])
                         self.schedule.add(agent)      
                         self.car_count += 1 
