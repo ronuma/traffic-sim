@@ -2,8 +2,7 @@
 # Rodrigo Nunez. November 2023
 
 from flask import Flask, request, jsonify
-from model_ro import CityModel
-# from model import CityModel
+from model import CityModel
 from agent import Car
 
 app = Flask("Traffic simulation")
@@ -14,7 +13,7 @@ current_step = 0
 @app.route('/init', methods=['GET', 'POST'])
 def initModel():
     global model, current_step
-    if request.method == 'GET' or request.method == 'POST':
+    if request.method == 'GET':
         current_step = 0
         model = CityModel()
         return jsonify({"message":"Model initiated."})

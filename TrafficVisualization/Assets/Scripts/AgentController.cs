@@ -57,48 +57,34 @@ public class AgentController : MonoBehaviour
         serverUrl (string): The url of the server.
         getAgentsEndpoint (string): The endpoint to get the agents data.
         getObstaclesEndpoint (string): The endpoint to get the obstacles data.
-        sendConfigEndpoint (string): The endpoint to send the configuration.
+        beginSimulationEndpoint (string): The endpoint to begin the simulation.
         updateEndpoint (string): The endpoint to update the simulation.
-        agentsData (AgentsData): The data of the agents.
+        agentsData (AgentsData): The data of the agents that is received from the server.
         agents (Dictionary<string, GameObject>): A dictionary of the agents.
-        prevPositions (Dictionary<string, Vector3>): A dictionary of the previous positions of the agents.
-        currPositions (Dictionary<string, Vector3>): A dictionary of the current positions of the agents.
         updated (bool): A boolean to know if the simulation has been updated.
-        started (bool): A boolean to know if the simulation has started.
         agentPrefab (GameObject): The prefab of the agents.
-        NAgents (int): The number of agents.
         timeToUpdate (float): The time to update the simulation.
         timer (float): The timer to update the simulation.
         dt (float): The delta time.
     */
     string serverUrl = "http://localhost:8585";
     string getAgentsEndpoint = "/getAgents";
-    string sendConfigEndpoint = "/init";
+    string beginSimulationEndpoint = "/init";
     string updateEndpoint = "/update";
     AgentsData agentsData;
     Dictionary<string, GameObject> agents;
-    Dictionary<string, Vector3> prevPositions, currPositions;
-
-    bool updated = false, started = false;
-
+    bool updated = false;
     public GameObject agentPrefab;
-    public int NAgents;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
 
     void Start()
     {
         agentsData = new AgentsData();
-
-        prevPositions = new Dictionary<string, Vector3>();
-        currPositions = new Dictionary<string, Vector3>();
-
         agents = new Dictionary<string, GameObject>();
-
         timer = timeToUpdate;
-
-        // Launches a couroutine to send the configuration to the server.
-        StartCoroutine(SendConfiguration());
+        // Launches a couroutine to begin the simulation in the server.
+        StartCoroutine(BeginSimulation());
     }
 
     private void Update()
@@ -114,23 +100,8 @@ public class AgentController : MonoBehaviour
         {
             timer -= Time.deltaTime;
             dt = 1.0f - (timer / timeToUpdate);
-
-            // Iterates over the agents to update their positions.
-            // The positions are interpolated between the previous and current positions.
-            foreach (var agent in currPositions)
-            {
-                Vector3 currentPosition = agent.Value;
-                Vector3 previousPosition = prevPositions[agent.Key];
-
-                // Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
-                // Vector3 direction = currentPosition - interpolated;
-
-                // agents[agent.Key].transform.localPosition = interpolated;
-                // if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
-            }
-
-            // float t = (timer / timeToUpdate);
-            // dt = t * t * ( 3f - 2f*t);
+            float t = (timer / timeToUpdate);
+            dt = t * t * (3f - 2f * t);
         }
     }
 
@@ -147,20 +118,9 @@ public class AgentController : MonoBehaviour
         }
     }
 
-    IEnumerator SendConfiguration()
+    IEnumerator BeginSimulation()
     {
-        /*
-        The SendConfiguration method is used to send the configuration to the server.
-
-        It uses a WWWForm to send the data to the server, and then it uses a UnityWebRequest to send the form.
-        */
-        WWWForm form = new WWWForm();
-
-        form.AddField("NAgents", NAgents.ToString()); ;
-
-        UnityWebRequest www = UnityWebRequest.Post(serverUrl + sendConfigEndpoint, form);
-        www.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
+        UnityWebRequest www = UnityWebRequest.Get(serverUrl + beginSimulationEndpoint);
         yield return www.SendWebRequest();
 
         if (www.result != UnityWebRequest.Result.Success)
@@ -169,10 +129,8 @@ public class AgentController : MonoBehaviour
         }
         else
         {
-            Debug.Log("Configuration upload complete!");
             Debug.Log("Getting Agents positions");
-
-            // Once the configuration has been sent, it launches a coroutine to get the agents data.
+            // Once the model has been initialized it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
         }
     }
@@ -180,7 +138,6 @@ public class AgentController : MonoBehaviour
     IEnumerator GetAgentsData()
     {
         // The GetAgentsData method is used to get the agents data from the server.
-
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + getAgentsEndpoint);
         yield return www.SendWebRequest();
 
@@ -188,34 +145,28 @@ public class AgentController : MonoBehaviour
             Debug.Log(www.error);
         else
         {
-            // Once the data has been received, it is stored in the agentsData variable.
-            // Then, it iterates over the agentsData.positions list to update the agents positions.
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
             foreach (AgentData agent in agentsData.positions)
             {
-                // Origin to initialize the agents
-                Vector3 origin = new Vector3(0, 0, 0);
-                Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
-
-                if (!started)
+                // If agent is not in the dictionary, add it and initialize it
+                if (!agents.ContainsKey(agent.id))
                 {
-                    prevPositions[agent.id] = newAgentPosition;
+                    Vector3 origin = new Vector3(0, 0, 0);
+                    Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
                     agents[agent.id] = Instantiate(agentPrefab, origin, Quaternion.identity);
+                    agents[agent.id].GetComponent<CarManager>().currentPos = newAgentPosition;
                     agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
                 }
                 else
                 {
-                    Vector3 currentPosition = new Vector3();
-                    if (currPositions.TryGetValue(agent.id, out currentPosition))
-                        prevPositions[agent.id] = currentPosition;
-                    currPositions[agent.id] = newAgentPosition;
+                    // If agent is in the dictionary, update its position
+                    Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
+                    // Here we don't need to update the currentPos because it is updated in the CarManager script
                     agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
                 }
             }
-
             updated = true;
-            if (!started) started = true;
         }
     }
 }
