@@ -60,6 +60,7 @@ public class AgentController : MonoBehaviour
         beginSimulationEndpoint (string): The endpoint to begin the simulation.
         updateEndpoint (string): The endpoint to update the simulation.
         agentsData (AgentsData): The data of the agents that is received from the server.
+        prevAgentsData (AgentsData): The data of the agents in the previous frame.
         agents (Dictionary<string, GameObject>): A dictionary of the agents.
         updated (bool): A boolean to know if the simulation has been updated.
         agentPrefab (GameObject): The prefab of the agents.
@@ -72,15 +73,17 @@ public class AgentController : MonoBehaviour
     string beginSimulationEndpoint = "/init";
     string updateEndpoint = "/update";
     AgentsData agentsData;
+    AgentsData prevAgentsData;
     Dictionary<string, GameObject> agents;
     bool updated = false;
     public GameObject agentPrefab;
-    public float timeToUpdate = 5.0f;
+    public float timeToUpdate = 1.0f;
     private float timer, dt;
 
     void Start()
     {
         agentsData = new AgentsData();
+        prevAgentsData = new AgentsData();
         agents = new Dictionary<string, GameObject>();
         timer = timeToUpdate;
         // Launches a couroutine to begin the simulation in the server.
@@ -95,13 +98,9 @@ public class AgentController : MonoBehaviour
             updated = false;
             StartCoroutine(UpdateSimulation());
         }
-
         if (updated)
         {
             timer -= Time.deltaTime;
-            dt = 1.0f - (timer / timeToUpdate);
-            float t = (timer / timeToUpdate);
-            dt = t * t * (3f - 2f * t);
         }
     }
 
@@ -146,7 +145,6 @@ public class AgentController : MonoBehaviour
         else
         {
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
-
             foreach (AgentData agent in agentsData.positions)
             {
                 // If agent is not in the dictionary, add it and initialize it
@@ -166,6 +164,20 @@ public class AgentController : MonoBehaviour
                     agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
                 }
             }
+            // If agent is not in the new agents data, destroy it
+            foreach (AgentData prevAgent in prevAgentsData.positions)
+            {
+                if (!agentsData.positions.Exists(agent => agent.id == prevAgent.id))
+                {
+                    Destroy(agents[prevAgent.id]);
+                    Destroy(agents[prevAgent.id].GetComponent<CarManager>().FrontLeftWheel);
+                    Destroy(agents[prevAgent.id].GetComponent<CarManager>().FrontRightWheel);
+                    Destroy(agents[prevAgent.id].GetComponent<CarManager>().RearLeftWheel);
+                    Destroy(agents[prevAgent.id].GetComponent<CarManager>().RearRightWheel);
+                    agents.Remove(prevAgent.id);
+                }
+            }
+            prevAgentsData = agentsData;
             updated = true;
         }
     }

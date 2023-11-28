@@ -18,10 +18,10 @@ public class CarManager : MonoBehaviour
     float elapsedTime = 0.0f;
     // --------------------------------------------
     // Wheel Game Objects
-    [SerializeField] GameObject FrontLeftWheel;
-    [SerializeField] GameObject FrontRightWheel;
-    [SerializeField] GameObject RearLeftWheel;
-    [SerializeField] GameObject RearRightWheel;
+    public GameObject FrontLeftWheel;
+    public GameObject FrontRightWheel;
+    public GameObject RearLeftWheel;
+    public GameObject RearRightWheel;
     float generalScale = 0.13f;
     float wheelScale = 0.35f;
     // All objects' meshes
@@ -102,7 +102,7 @@ public class CarManager : MonoBehaviour
     {
         // ------ LERP --------------------------------
         t = elapsedTime / moveTime;
-        t = t * t * (3.0f - 2.0f * t);
+        // t = t * t * (3.0f - 2.0f * t); suavisar movimiento
         Vector3 position = currentPos + (targetPos - currentPos) * t;
         Matrix4x4 move = OurTransform.Translate(position.x,
                                                       position.y,
@@ -122,18 +122,21 @@ public class CarManager : MonoBehaviour
         Vector3 target = new Vector3(targetPos.x - currentPos.x, 0f, targetPos.z - currentPos.z);
         Vector3 relative = transform.InverseTransformPoint(target);
         float calculatedAngle = Mathf.Atan2(relative.x, relative.z) * Mathf.Rad2Deg;
-        // If the angle is negative, it means the car has to rotate to the left
-        if (calculatedAngle > 0)
+        if (currentPos == targetPos)
+        {
+            // If the car is not moving, it should not rotate, it should keep the same angle
+        }
+        else if (calculatedAngle == 0f)
+        {
+            currentAngle = 0;
+        }
+        else if (calculatedAngle > 0f)
         {
             currentAngle = (int)calculatedAngle;
         }
-        else if (calculatedAngle == 0)
-        {
-            currentAngle = currentAngle;
-        }
         else
         {
-            currentAngle = (int)(360 + calculatedAngle);
+            currentAngle = (int)calculatedAngle + 360;
         }
         Matrix4x4 rotateObj = OurTransform.Rotate(-currentAngle, AXIS.Y);
         Matrix4x4 scaleWheel = OurTransform.Scale(wheelScale, wheelScale, wheelScale);
