@@ -56,8 +56,12 @@ grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 class CurrentCars(TextElement):
     def render(self, model):
         return "Cars on scene: " + str(model.car_count) + " "
+    
+class ArrivedCars(TextElement):
+    def render(self, model):
+        return "Arrived cars: " + str(model.arrived_cars) + " "
 
-server = ModularServer(CityModel, [grid, CurrentCars()], "Traffic Base", model_params)
+server = ModularServer(CityModel, [grid, CurrentCars(), ArrivedCars()], "Traffic Base", model_params)
                        
 server.port = 8521 # The default
 server.launch()
