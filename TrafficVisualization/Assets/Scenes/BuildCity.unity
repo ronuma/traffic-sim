@@ -340,7 +340,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentPrefab: {fileID: 197155509292700737, guid: 93220fb81da5a714fb558202f811e677, type: 3}
   NAgents: 4
-  timeToUpdate: 3
+  timeToUpdate: 1
 --- !u!4 &964421903
 Transform:
   m_ObjectHideFlags: 0
