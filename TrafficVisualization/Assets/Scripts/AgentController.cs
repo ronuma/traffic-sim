@@ -126,12 +126,12 @@ public class AgentController : MonoBehaviour
 
     private void Update()
     {
-        timer -= Time.deltaTime;
         if (timer <= 0)
         {
             timer = timeToUpdate;
             StartCoroutine(UpdateSimulation());
         }
+        timer -= Time.deltaTime;
     }
 
     IEnumerator UpdateSimulation()
@@ -213,7 +213,14 @@ public class AgentController : MonoBehaviour
                 if (!semaphores.ContainsKey(semaphore.id))
                 {
                     Vector3 newSemaphorePosition = new Vector3(semaphore.x, semaphore.y, semaphore.z);
-                    semaphores[semaphore.id] = Instantiate(semaphorePrefab, newSemaphorePosition, Quaternion.identity);
+                    if (semaphore.isGreen)
+                    {
+                        semaphores[semaphore.id] = Instantiate(semaphorePrefab, newSemaphorePosition, Quaternion.identity);
+                    }
+                    else
+                    {
+                        semaphores[semaphore.id] = Instantiate(semaphorePrefab, newSemaphorePosition, Quaternion.Euler(0, 90, 0));
+                    }
                     semaphores[semaphore.id].GetComponent<SemaphoreManager>().isGreen = semaphore.isGreen;
                 }
                 else
