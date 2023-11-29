@@ -23,7 +23,7 @@ public class CarManager : MonoBehaviour
     public GameObject FrontRightWheel;
     public GameObject RearLeftWheel;
     public GameObject RearRightWheel;
-    float generalScale = 0.13f;
+    float generalScale = 0.165f;
     float wheelScale = 0.35f;
     // All objects' meshes
     Mesh CarMesh;
