@@ -24,8 +24,8 @@ class Car(Agent):
         self.patience = random.randint(patience, patience * 2) # The patience of the car
         self.map = init_model # The map of the city in order to calculate the shortest path
         self.path = [] # The path that the car will follow
-        self.dir = 'Up' # The direction of the car
-        
+        self.dir = " " # The direction of the car
+    
         self.calculate_A_star(self.pos, self.goal) # Shortest path from spwawn to goal
                 
     def calculate_A_star(self, pos, dest): 
@@ -35,7 +35,7 @@ class Car(Agent):
         try:            
             path = nx.shortest_path(self.map, pos, dest, weight='weight') # Calculate the shortest path
             path = path[::-1] #reverse the path
-            path.pop() # Remove the first element of the path
+            # path.pop() # Remove the first element of the path
             self.path = path # Set the path
             
             return []
@@ -47,44 +47,40 @@ class Car(Agent):
         """
         Checks if the car can move diagonally
         """
+        if self.dir == " ":
+            return False
+        
         dict = {"Up": (1, 0), "Down": (-1, 0), "Right": (0, -1), "Left": (0, 1)}
         
         all_neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
-        print(dict[self.dir])
         
         for neighbor in all_neighbors:
-            if self.pos[0] + dict[self.dir][0] == neighbor.pos:
+            if self.pos[0] + dict[self.dir][0] == neighbor.pos[0] and self.pos[1] + dict[self.dir][1] == neighbor.pos[1]:
                 if isinstance(neighbor, Car) and self.path[-1][0] != self.pos[0] and self.path[-1][1] != self.pos[1]:
                     self.patience -= 1
-                    return False
-        
-            return False
+                    return True
         
         else:
-            return True
+            return False
         
     def move(self):
         """ 
         Determines if the agent can move in the direction that was chosen
-        """     
+        """      
         if self.path == []:
-            return
+            return 
         
         neighbors = self.model.grid.get_cell_list_contents(self.path[-1])
         
-        # if any(isinstance(x, Car) for x in neighbors):
-        #     self.patience -= 1
-        #         return
-        
         for agent in neighbors:
-            if isinstance(agent, Car): 
+            if isinstance(agent, Car) and self.unique_id != agent.unique_id:
                 self.patience -= 1
                 return
             elif isinstance(agent, Traffic_Light):
                 if not agent.state:                    
                     return
-            elif (self.check_diagonal()):
-                return
+            # elif (self.check_diagonal()):
+            #     return
             elif isinstance(agent, Destination):
                 self.model.schedule.remove(self)
                 self.model.grid.remove_agent(self)
