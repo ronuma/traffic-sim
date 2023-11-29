@@ -24,7 +24,7 @@ class Car(Agent):
         self.patience = random.randint(patience, patience * 2) # The patience of the car
         self.map = init_model # The map of the city in order to calculate the shortest path
         self.path = [] # The path that the car will follow
-        self.dir = 0 # The direction of the car
+        self.dir = 'Up' # The direction of the car
         
         self.calculate_A_star(self.pos, self.goal) # Shortest path from spwawn to goal
                 
@@ -43,16 +43,30 @@ class Car(Agent):
             print("Either the source or the destination node does not exist in the graph.")
             return []
         
+    def check_diagonal(self):
+        """
+        Checks if the car can move diagonally
+        """
+        dict = {"Up": (1, 0), "Down": (-1, 0), "Right": (0, -1), "Left": (0, 1)}
+        
+        all_neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
+        print(dict[self.dir])
+        
+        for neighbor in all_neighbors:
+            if self.pos[0] + dict[self.dir][0] == neighbor.pos:
+                if isinstance(neighbor, Car) and self.path[-1][0] != self.pos[0] and self.path[-1][1] != self.pos[1]:
+                    self.patience -= 1
+                    return False
+        
+            return False
+        
+        else:
+            return True
+        
     def move(self):
         """ 
         Determines if the agent can move in the direction that was chosen
-        """       
-
-        # dict = {"Up": [(0, 1), (1, 1)],                
-        #         "Down": [(0, -1), (-1, -1)],
-        #         "Right": [(1, 0), (1, -1)], 
-        #         "Left": [(-1, 0), (-1, 1)]}
-        
+        """     
         if self.path == []:
             return
         
@@ -69,6 +83,8 @@ class Car(Agent):
             elif isinstance(agent, Traffic_Light):
                 if not agent.state:                    
                     return
+            elif (self.check_diagonal()):
+                return
             elif isinstance(agent, Destination):
                 self.model.schedule.remove(self)
                 self.model.grid.remove_agent(self)
