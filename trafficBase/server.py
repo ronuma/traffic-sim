@@ -4,6 +4,9 @@ from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
 from mesa.visualization.modules import TextElement
 
+from mesa.visualization import Slider
+
+
 def agent_portrayal(agent):
     if agent is None: return
     
@@ -48,7 +51,12 @@ with open('./city_files/2023_base.txt') as baseFile:
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {}
+model_params = {
+    "diagonales": Slider("Respetuosos", 1.5, 0.5, 5.0, 0.1),
+    "paciencia": Slider("Pascientes", 1.0, 1.0, 10.0, 1.0),
+    "semaforos": Slider("Energicos", 1.0, 1.0, 40.0, 5.0),
+}
+
 
 print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
