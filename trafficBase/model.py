@@ -13,7 +13,7 @@ class CityModel(Model):
     Args:
         N: Number of agents in the simulation (assuming 1 for a single car)
     """
-    def __init__(self, diagonales = 1.5, paciencia = 10, semaforos = 50):
+    def __init__(self, diagonales = 1.5, paciencia = 5, semaforos = 50):
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
             self.dataDictionary = json.load(open("city_files/mapDictionary.json"))
             self.map = 0
@@ -36,7 +36,7 @@ class CityModel(Model):
                 self.width = len(lines[0]) - 1
                 self.height = len(lines)
                 
-                self.spawn_points = [(0,0), (self.width - 1, 0), (0,self.height - 1), (self.width - 1, self.height - 1)]
+                self.spawn_points = [(0, 0) ,(self.width - 1, 0), (0,self.height - 1), (self.width - 1, self.height - 1)]
 
                 self.grid = MultiGrid(self.width, self.height, torus=False)
                 self.schedule = RandomActivation(self)
@@ -145,7 +145,7 @@ class CityModel(Model):
         plt.show()
 
     def step(self):
-        if self.step_count%1 == 0 and self.step_count != 0:
+        if self.step_count%2 == 0 and self.step_count != 0:
             self.add_cars()
         self.step_count += 1
-        self.schedule.step() 
+        self.schedule.step()  
