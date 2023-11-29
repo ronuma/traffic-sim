@@ -13,7 +13,7 @@ class CityModel(Model):
     Args:
         N: Number of agents in the simulation (assuming 1 for a single car)
     """
-    def __init__(self):
+    def __init__(self, diagonales = 1.5, paciencia = 10, semaforos = 50):
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
             self.dataDictionary = json.load(open("city_files/mapDictionary.json"))
             self.map = 0
@@ -22,6 +22,11 @@ class CityModel(Model):
             self.car_count = 0
             self.total_cars = 0
             self.arrived_cars = 0
+            #variables for sliders
+            self.diagonales = diagonales
+            self.paciencia = paciencia
+            self.semaforos = semaforos
+            
             self.traffic_lights = []
             graph = nx.DiGraph()  # Change to directed graph     
 
@@ -109,10 +114,10 @@ class CityModel(Model):
                     elif neighbor == neighbors[2]:                     
                         graph.add_edge(node, neighbor, weight=1)
                     elif neighbor != neighbors[3] and neighbor != neighbors[4]:                     
-                        graph.add_edge(node, neighbor, weight=1.2)
+                        graph.add_edge(node, neighbor, weight=self.diagonales)
         
         if (x + xVal, y + yVal) in graph.nodes and 'signal_type' in graph.nodes[(x + xVal, y + yVal)] and graph.nodes[(x + xVal, y + yVal)]['signal_type'] in ["long", "short"]:
-            graph.add_edge((x + xVal, y + yVal), (x + (xVal * 2), y + (yVal * 2)), weight=2)
+            graph.add_edge((x + xVal, y + yVal), (x + (xVal * 2), y + (yVal * 2)), weight=self.semaforos * 5)
         
         
         
@@ -120,7 +125,7 @@ class CityModel(Model):
         for car in range(len(self.spawn_points)):    
                     dest = random.choice(self.destinations) #choose a random destination
                     new_map = self.map.copy()                    
-                    agent = Car(f"c_{self.total_cars}", self, dest, new_map, self.spawn_points[car])
+                    agent = Car(f"c_{self.total_cars}", self, dest, new_map, self.spawn_points[car], self.paciencia)
                     content = self.grid.get_cell_list_contents(self.spawn_points[car])
                     if any(isinstance(x, Car) for x in content):  # if the agent is a random agent                        
                         return
@@ -143,4 +148,4 @@ class CityModel(Model):
         if self.step_count%1 == 0 and self.step_count != 0:
             self.add_cars()
         self.step_count += 1
-        self.schedule.step()
+        self.schedule.step() 

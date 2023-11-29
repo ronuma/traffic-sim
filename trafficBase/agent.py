@@ -11,7 +11,7 @@ class Car(Agent):
         unique_id: Agent's ID 
         direction: Randomly chosen direction chosen from one of eight directions
     """
-    def __init__(self, unique_id, model, goal, init_model, pos, mode = False):
+    def __init__(self, unique_id, model, goal, init_model, pos, patience = 5):
         """
         Creates a new random agent.
         Args:
@@ -19,13 +19,12 @@ class Car(Agent):
             model: Model reference for the agent
         """
         super().__init__(unique_id, model)
-        self.start = self.pos # The starting position of the car
         self.goal = goal # The goal position of the car
         self.pos = pos # The current position of the car initialized where the car is spawned
-        self.patience = random.randint(5, 10) # The patience of the car
+        self.patience = random.randint(patience, patience * 2) # The patience of the car
         self.map = init_model # The map of the city in order to calculate the shortest path
-        self.mode = mode # A tester mode if true it means that the car is in the tester mode and it will not move
         self.path = [] # The path that the car will follow
+        self.dir = 0 # The direction of the car
         
         self.calculate_A_star(self.pos, self.goal) # Shortest path from spwawn to goal
                 
@@ -36,7 +35,9 @@ class Car(Agent):
         try:            
             path = nx.shortest_path(self.map, pos, dest, weight='weight') # Calculate the shortest path
             path = path[::-1] #reverse the path
+            path.pop() # Remove the first element of the path
             self.path = path # Set the path
+            
             return []
         except nx.NodeNotFound:
             print("Either the source or the destination node does not exist in the graph.")
@@ -46,49 +47,46 @@ class Car(Agent):
         """ 
         Determines if the agent can move in the direction that was chosen
         """       
+
+        # dict = {"Up": [(0, 1), (1, 1)],                
+        #         "Down": [(0, -1), (-1, -1)],
+        #         "Right": [(1, 0), (1, -1)], 
+        #         "Left": [(-1, 0), (-1, 1)]}
+        
         if self.path == []:
             return
         
         neighbors = self.model.grid.get_cell_list_contents(self.path[-1])
+        
+        # if any(isinstance(x, Car) for x in neighbors):
+        #     self.patience -= 1
+        #         return
+        
         for agent in neighbors:
             if isinstance(agent, Car): 
-                if agent.unique_id == self.unique_id:
-                    # print("Same car")
-                    continue
-                else:
-                    self.patience = 0
+                self.patience -= 1
+                return
+            elif isinstance(agent, Traffic_Light):
+                if not agent.state:                    
                     return
-            if isinstance(agent, Destination):
+            elif isinstance(agent, Destination):
                 self.model.schedule.remove(self)
                 self.model.grid.remove_agent(self)
                 self.model.car_count -= 1         
                 self.model.arrived_cars += 1       
                 return
-            if isinstance(agent, Traffic_Light):
-                if not agent.state:                    
-                    return
-                else:
-                    # print("Green light")
-                    break
-        
+            elif isinstance(agent, Road):
+                self.dir = agent.direction
+                 
         self.model.grid.move_agent(self, self.path[-1])
-        # self.patience += 1
         self.path.pop()
-        
-    def plot_graph(self, graph):
-        pos = {node: (node[0], -node[1]) for node in graph.nodes}  # Flip y-axis for visualization
-        nx.draw(graph, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=8, font_color='black')
-        labels = nx.get_edge_attributes(graph,'weight')
-        nx.draw_networkx_edge_labels(graph,pos,edge_labels=labels)
-        plt.show()
         
     def out_of_patience(self):
         edges = nx.edges(self.map, [self.pos])        
-        for edge in edges:
-            if edge[0][1] == edge[1][1] or edge[0][0] == edge[1][0]:                
+        for edge in edges:         
+            if edge[1] == self.path[-1]:      
                 self.map.edges[edge]['weight'] += 5
                 self.patience = random.randint(5, 10)
-                # self.plot_graph(self.map)
         
         self.calculate_A_star(self.pos, self.goal)
         
@@ -97,8 +95,6 @@ class Car(Agent):
         """ 
         Determines the new direction it will take, and then moves
         """
-        if self.mode:
-            return
         if self.patience <= 0:
             self.out_of_patience()
         self.move()
