@@ -26,7 +26,7 @@ def getAgents():
         agent_positions = [{"id": a.unique_id, "x": a.pos[0], "y":0, "z":a.pos[1]}
                           for a in model.schedule.agents
                           if isinstance(a, Car)]
-        traffic_lights = [{"id": a.unique_id, "x": a.pos[0], "y":0, "z":a.pos[1], "state":a.state}
+        traffic_lights = [{"id": a.unique_id, "x": a.pos[0], "y":0, "z":a.pos[1], "isGreen":a.state}
                           for a in model.schedule.agents
                           if isinstance(a, Traffic_Light)]
         return jsonify({'positions':agent_positions,
