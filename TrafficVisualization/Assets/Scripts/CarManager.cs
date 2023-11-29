@@ -13,6 +13,7 @@ public class CarManager : MonoBehaviour
     // ------- LERP --------------------------------
     public Vector3 currentPos = new Vector3(0, 0, 0);
     public Vector3 targetPos;
+    public Vector3 nextPos;
     float t;
     float moveTime = 1.0f;
     float elapsedTime = 0.0f;
@@ -111,6 +112,7 @@ public class CarManager : MonoBehaviour
         if (elapsedTime >= moveTime)
         {
             currentPos = targetPos;
+            targetPos = nextPos;
             elapsedTime = 0.0f;
         }
         // --------------------------------------------

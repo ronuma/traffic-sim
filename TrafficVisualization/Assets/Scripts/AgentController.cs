@@ -10,6 +10,34 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 [Serializable]
+public class SemaphoreData
+{
+    /*
+    The SemaphoreData class is used to store the data of each semaphore.
+
+    Attributes:
+        id (string): The id of the semaphore.
+        x (float): The x coordinate of the semaphore.
+        y (float): The y coordinate of the semaphore.
+        z (float): The z coordinate of the semaphore.
+        green (bool): A boolean to know if the semaphore is green.
+    */
+    public string id;
+    public float x, y, z;
+    public bool isGreen;
+
+    public SemaphoreData(string id, float x, float y, float z, bool isGreen)
+    {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.isGreen = isGreen;
+    }
+}
+
+
+[Serializable]
 public class AgentData
 {
     /*
@@ -34,7 +62,6 @@ public class AgentData
 }
 
 [Serializable]
-
 public class AgentsData
 {
     /*
@@ -44,8 +71,13 @@ public class AgentsData
         positions (list): A list of AgentData objects.
     */
     public List<AgentData> positions;
+    public List<SemaphoreData> traffic_lights;
 
-    public AgentsData() => this.positions = new List<AgentData>();
+    public AgentsData()
+    {
+        positions = new List<AgentData>();
+        traffic_lights = new List<SemaphoreData>();
+    }
 }
 
 public class AgentController : MonoBehaviour
@@ -75,8 +107,9 @@ public class AgentController : MonoBehaviour
     AgentsData agentsData;
     AgentsData prevAgentsData;
     Dictionary<string, GameObject> agents;
-    bool updated = false;
+    Dictionary<string, GameObject> semaphores;
     public GameObject agentPrefab;
+    public GameObject semaphorePrefab;
     public float timeToUpdate = 1.0f;
     private float timer, dt;
 
@@ -85,6 +118,7 @@ public class AgentController : MonoBehaviour
         agentsData = new AgentsData();
         prevAgentsData = new AgentsData();
         agents = new Dictionary<string, GameObject>();
+        semaphores = new Dictionary<string, GameObject>();
         timer = timeToUpdate;
         // Launches a couroutine to begin the simulation in the server.
         StartCoroutine(BeginSimulation());
@@ -92,15 +126,11 @@ public class AgentController : MonoBehaviour
 
     private void Update()
     {
-        if (timer < 0)
+        timer -= Time.deltaTime;
+        if (timer <= 0)
         {
             timer = timeToUpdate;
-            updated = false;
             StartCoroutine(UpdateSimulation());
-        }
-        if (updated)
-        {
-            timer -= Time.deltaTime;
         }
     }
 
@@ -155,13 +185,14 @@ public class AgentController : MonoBehaviour
                     agents[agent.id] = Instantiate(agentPrefab, origin, Quaternion.identity);
                     agents[agent.id].GetComponent<CarManager>().currentPos = newAgentPosition;
                     agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
+                    agents[agent.id].GetComponent<CarManager>().nextPos = newAgentPosition;
                 }
                 else
                 {
-                    // If agent is in the dictionary, update its position
+                    // If agent is in the dictionary, update its next position so that when it finishes
+                    // its current movement it moves to the new position
                     Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
-                    // Here we don't need to update the currentPos because it is updated in the CarManager script
-                    agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
+                    agents[agent.id].GetComponent<CarManager>().nextPos = newAgentPosition;
                 }
             }
             // If agent is not in the new agents data, destroy it
@@ -177,8 +208,20 @@ public class AgentController : MonoBehaviour
                     agents.Remove(prevAgent.id);
                 }
             }
+            foreach (SemaphoreData semaphore in agentsData.traffic_lights)
+            {
+                if (!semaphores.ContainsKey(semaphore.id))
+                {
+                    Vector3 newSemaphorePosition = new Vector3(semaphore.x, semaphore.y, semaphore.z);
+                    semaphores[semaphore.id] = Instantiate(semaphorePrefab, newSemaphorePosition, Quaternion.identity);
+                    semaphores[semaphore.id].GetComponent<SemaphoreManager>().isGreen = semaphore.isGreen;
+                }
+                else
+                {
+                    semaphores[semaphore.id].GetComponent<SemaphoreManager>().isGreen = semaphore.isGreen;
+                }
+            }
             prevAgentsData = agentsData;
-            updated = true;
         }
     }
 }
