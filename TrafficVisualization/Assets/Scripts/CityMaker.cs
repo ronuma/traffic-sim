@@ -6,7 +6,8 @@ public class CityMaker : MonoBehaviour
 {
     [SerializeField] TextAsset layout;
     [SerializeField] GameObject roadPrefab;
-    [SerializeField] GameObject buildingPrefab;
+    [SerializeField] GameObject buildingPrefab, buildingPrefab1, buildingPrefab2, buildingPrefab3;
+    List<GameObject> buildingPrefabs = new List<GameObject>();
     [SerializeField] GameObject semaphorePrefab;
 
     float tileSize = 1.0f;
@@ -14,6 +15,10 @@ public class CityMaker : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        buildingPrefabs.Add(buildingPrefab);
+        buildingPrefabs.Add(buildingPrefab1);
+        buildingPrefabs.Add(buildingPrefab2);
+        buildingPrefabs.Add(buildingPrefab3);
         MakeTiles(layout.text);
     }
 
@@ -75,6 +80,7 @@ public class CityMaker : MonoBehaviour
             }
             else if (tiles[i] == '#')
             {
+                buildingPrefab = buildingPrefabs[Random.Range(0, buildingPrefabs.Count)];
                 position = new Vector3(x * tileSize, 0, y * tileSize);
                 tile = Instantiate(buildingPrefab, position, Quaternion.identity);
                 tile.transform.localScale = new Vector3(1, Random.Range(0.5f, 2.0f), 1);

@@ -95,7 +95,8 @@ public class AgentController : MonoBehaviour
         prevAgentsData (AgentsData): The data of the agents in the previous frame.
         agents (Dictionary<string, GameObject>): A dictionary of the agents.
         updated (bool): A boolean to know if the simulation has been updated.
-        agentPrefab (GameObject): The prefab of the agents.
+        [color]CarPrefab (GameObject): The prefab for the cars.
+        carPrefabs (List<GameObject>): A list of the car prefabs to choose from when instantiating a car.
         timeToUpdate (float): The time to update the simulation.
         timer (float): The timer to update the simulation.
         dt (float): The delta time.
@@ -108,8 +109,8 @@ public class AgentController : MonoBehaviour
     AgentsData prevAgentsData;
     Dictionary<string, GameObject> agents;
     Dictionary<string, GameObject> semaphores;
-    public GameObject agentPrefab;
-    public GameObject semaphorePrefab;
+    public GameObject grayCarPrefab, yellowCarPrefab, blueCarPrefab, purpleCarPrefab, redCarPrefab, semaphorePrefab;
+    public List<GameObject> carPrefabs;
     public float timeToUpdate = 1.0f;
     private float timer, dt;
 
@@ -120,6 +121,12 @@ public class AgentController : MonoBehaviour
         agents = new Dictionary<string, GameObject>();
         semaphores = new Dictionary<string, GameObject>();
         timer = timeToUpdate;
+        carPrefabs = new List<GameObject>();
+        carPrefabs.Add(grayCarPrefab);
+        carPrefabs.Add(yellowCarPrefab);
+        carPrefabs.Add(blueCarPrefab);
+        carPrefabs.Add(purpleCarPrefab);
+        carPrefabs.Add(redCarPrefab);
         // Launches a couroutine to begin the simulation in the server.
         StartCoroutine(BeginSimulation());
     }
@@ -180,9 +187,10 @@ public class AgentController : MonoBehaviour
                 // If agent is not in the dictionary, add it and initialize it
                 if (!agents.ContainsKey(agent.id))
                 {
+                    GameObject carPrefab = carPrefabs[UnityEngine.Random.Range(0, carPrefabs.Count)];
                     Vector3 origin = new Vector3(0, 0, 0);
                     Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
-                    agents[agent.id] = Instantiate(agentPrefab, origin, Quaternion.identity);
+                    agents[agent.id] = Instantiate(carPrefab, origin, Quaternion.identity);
                     agents[agent.id].GetComponent<CarManager>().currentPos = newAgentPosition;
                     agents[agent.id].GetComponent<CarManager>().targetPos = newAgentPosition;
                     agents[agent.id].GetComponent<CarManager>().nextPos = newAgentPosition;

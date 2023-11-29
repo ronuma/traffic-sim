@@ -338,8 +338,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 983bc179e80f15347a79dd7b044746e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agentPrefab: {fileID: 197155509292700737, guid: 93220fb81da5a714fb558202f811e677, type: 3}
+  grayCarPrefab: {fileID: 197155509292700737, guid: 93220fb81da5a714fb558202f811e677, type: 3}
+  yellowCarPrefab: {fileID: 28470197368488684, guid: 338c4f1d21dedf54bb56327389ddc09f, type: 3}
+  blueCarPrefab: {fileID: 3376614640388803022, guid: d1e0ffa680fc8cc4daaaa893106db961, type: 3}
+  purpleCarPrefab: {fileID: 3564590033550583705, guid: 87e05df5c223db144b8b74e5046fbd03, type: 3}
+  redCarPrefab: {fileID: 9195501639867466223, guid: 494ef96cdd5f8094ba6c16f22a72fe8d, type: 3}
   semaphorePrefab: {fileID: 8102729382312259521, guid: ec03db3fda9c46458bf4fb4f61cc11bd, type: 3}
+  carPrefabs: []
   timeToUpdate: 1
 --- !u!4 &964421903
 Transform:
@@ -388,6 +393,9 @@ MonoBehaviour:
   layout: {fileID: 4900000, guid: 8c247c677259dec4b8ed048b15fea5bc, type: 3}
   roadPrefab: {fileID: 3240343348373693069, guid: 646fc54ff3078ce94bbdbd0f0d4c4a05, type: 3}
   buildingPrefab: {fileID: 33555395739272859, guid: 10a584233fb38a918af771ddce837268, type: 3}
+  buildingPrefab1: {fileID: 33555395739272859, guid: 078fb6b5ec3388a4497da7740f8eb8e6, type: 3}
+  buildingPrefab2: {fileID: 33555395739272859, guid: 6b4e0cd66c074534abd3a4ba49d4b224, type: 3}
+  buildingPrefab3: {fileID: 33555395739272859, guid: c951d45724d1ebe47a3a0d222368fe0e, type: 3}
   semaphorePrefab: {fileID: 8102729382312259521, guid: ec03db3fda9c46458bf4fb4f61cc11bd, type: 3}
 --- !u!4 &1457529884
 Transform:
