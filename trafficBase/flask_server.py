@@ -4,13 +4,17 @@
 from flask import Flask, request, jsonify
 from model import CityModel
 from agent import Car, Traffic_Light
+import requests
+import json
 
 app = Flask("Traffic simulation")
+
+send_car_count_endpoint = "http://52.1.3.19:8585/api/validate_attempt"
 
 model = None
 current_step = 0
 
-@app.route('/init', methods=['GET', 'POST'])
+@app.route('/init', methods=['GET'])
 def initModel():
     global model, current_step
     if request.method == 'GET':
@@ -38,7 +42,25 @@ def updateModel():
     if request.method == 'GET':
         model.step()
         current_step += 1
+        if current_step % 100 == 0:
+            send_car_count()
         return jsonify({'message':f'Model updated to step {current_step}.', 'current_step':current_step})
+    
+def send_car_count():
+    global model
+    data = {
+        "year" : 2023,
+        "classroom" : 301,
+        "name" : "Gabi y Ro",
+        "num_cars": model.car_count
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(send_car_count_endpoint, data=json.dumps(data), headers=headers)
+    print("Request " + "successful" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+    print("Response:", response.json())
     
 if __name__ == '__main__':
     app.run(debug=True, port = 8585, host = "localhost")
