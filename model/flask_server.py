@@ -9,7 +9,7 @@ import json
 
 app = Flask("Traffic simulation")
 
-send_arrived_cars_endpoint = "http://52.1.3.19:8585/api/validate_attempt"
+send_arrived_cars_endpoint = "http://52.1.3.19:8585/api/attempts"
 
 model = None
 current_step = 0
@@ -42,8 +42,8 @@ def updateModel():
     if request.method == 'GET':
         model.step()
         current_step += 1
-        if current_step % 100 == 0:
-            send_arrived_cars()
+        # if current_step % 100 == 0:
+        #     send_arrived_cars()
         return jsonify({'message':f'Model updated to step {current_step}.', 'current_step':current_step})
     
 def send_arrived_cars():

@@ -13,7 +13,7 @@ class CityModel(Model):
     Args:
         N: Number of agents in the simulation (assuming 1 for a single car)
     """
-    def __init__(self, diagonales = 1.5, paciencia = 1, semaforos = 50):
+    def __init__(self, diagonales = 1.5, paciencia = 1, semaforos = 5):
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
             self.dataDictionary = json.load(open("city_files/mapDictionary.json"))
             self.map = 0
@@ -145,7 +145,7 @@ class CityModel(Model):
         plt.show()
 
     def step(self):
-        if self.step_count%1 == 0 and self.step_count != 0:
+        if self.step_count%3 == 0 and self.step_count != 0:
             self.add_cars()
         self.step_count += 1
         self.schedule.step()  
