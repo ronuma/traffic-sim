@@ -23,7 +23,7 @@ public class CarManager : MonoBehaviour
     public GameObject FrontRightWheel;
     public GameObject RearLeftWheel;
     public GameObject RearRightWheel;
-    float generalScale = 0.165f;
+    float generalScale = 0.15f;
     float wheelScale = 0.35f;
     // All objects' meshes
     Mesh CarMesh;
@@ -103,7 +103,6 @@ public class CarManager : MonoBehaviour
     {
         // ------ LERP --------------------------------
         t = elapsedTime / moveTime;
-        // t = t * t * (3.0f - 2.0f * t); suavisar movimiento
         Vector3 position = currentPos + (targetPos - currentPos) * t;
         Matrix4x4 move = OurTransform.Translate(position.x,
                                                       position.y,
