@@ -8,25 +8,26 @@ Gabriel Rodríguez De Los Reyes
 
 El proyecto consiste en una simulación de coches en una pequeña ciudad con semáforos. La idea es simular un comportamiento en los coches, el cual consiste en llegar de un punto a otro, sin chocar con otros coches y respetando los semáforos. La parte visual de la simulación se realizará con Unity, y la parte lógica de la simulación, con Python, utilizando una librería llamada mesa.
 
-# Agent Visualization using Unity
+# Visualización de simulación en Unity
 
-This project is a simple demonstration of how to visualize the agents from mesa inside Unity. The project was tested on Unity 2022.3.12f1. The server was running using the environment provided in the repository.
+Para visualizar la simulación en Unity, se debe correr el servidor de Python, y después correr la simulación en Unity. El servidor de Python se encuentra en la carpeta ```model```, y se corre con el archivo ```flask_server.py```. La simulación de Unity se encuentra en la carpeta ```TrafficVisualization```, que es el proyecto de Unity mismo.
 
-## Instructions to run the local server and the Unity application
+## Instrucciones para correr la simulación
 
--  Run the flask server:
+-  Correr el servidor de flask:
 
+Una vez dentro del directorio ```model```, correr el siguiente comando:
+
+```bash
+$ python flask_server.py
 ```
-Server/tc2008B_flask.py
-```
 
-- Once the server is running, launch the Unity scene ```RandomAgents``` that is in the folder: ```AgentsVisualization```.
-- The scene has a game objects: ```AgentController``` that is responsible of getting the data from the mesa simulation. This is done through the ```AgentController.cs``` script.
-- The ````AgentController.cs```` parses JSON data that comes from the servers. The script does so by using two classes: ```AgentData``` and ```AgentsData```. The first class contains the data for each individual agent, while the latter contains a list with the data for all the agents.
-- The script uses [UnityWebRequests](https://docs.unity3d.com/ScriptReference/Networking.UnityWebRequest.html) to interact with the server; from the initialization of the model, to updating and fetching the agent's positions.
-- The script is listening to port 8585 (http://localhost:8585). **Double check that your server is launching on that port.**
-- If everything is running, Unity should render a simple scene with cubes that are moving:
+- Una vez que el servidor esté corriendo, abrir el proyecto de Unity, y abrir la escena ```TrafficSimulation```. Una vez que la escena esté abierta, correr la simulación.
 
-![RandomAgentSimulation](/docs/Images/Random_agent_simulation.png)
+- Esta escena tiene el game object: ```AgentController``` que es responsable de hacer peticiones al servidor de flask para iniciar la simulación de mesa e irla actualizando. Esto se hace a través del script ```AgentController.cs```.
 
-- [Traffic Base](./trafficBase/): Base simulation for the traffic simulation. Contains city maps that are used to create a model for the agents to interact with.
+- También tiene el game object: ```CityMaker``` que genera la ciudad, y los agentes que la habitan. Esto se hace a través del script ```CityMaker.cs```. 
+
+- Existe un script llamado ```CarManager.cs``` y otro ```SemaphorManager.cs```. El primero se encarga de mover los coches, y el segundo de cambiar los semáforos, en pocas palabras. El del auto inicializa sus llantas, las escala y posiciona, rota al auto, y lo mueve. El de los semáforos simplemente cambia el color de sus luces.
+
+- En resumen, el ```AgentController``` es el encargado de hacer peticiones al servidor de flask e inicializar a todos los agentes, así como de asignar los valores de sus siguientes posiciones a los autos y destruirlos una vez que llegan a su destino, y el ```CityMaker``` es el encargado de generar la ciudad. Los scripts de los agentes se encargan de sus "funcionalidades".
